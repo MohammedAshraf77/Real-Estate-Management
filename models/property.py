@@ -6,7 +6,7 @@ class Property(models.Model):
     _name = 'property'
     _description = 'Property'
     _inherit = ['mail.thread', 'mail.activity.mixin']
-
+    ref = fields.Char(default='New', readonly=1)
     name = fields.Char(required=True, default='new')
     description = fields.Text(tracking=1)
     postcode = fields.Char(required=True)
@@ -91,37 +91,34 @@ class Property(models.Model):
             rec.state = 'closed'
 
     def check_expected_selling_date(self):
-        # for rec in self: already el elf met handla
+        # for rec in self: already el elf met handle
         # print(self)
         property_ids = self.search([])
         for rec in property_ids:
             if rec.expected_selling_date and rec.expected_selling_date < fields.date.today():
                 rec.is_late = True
+#adding new owner by env.
+    def action(self):
+        print(self.env['owner'].create({
+            'name':'name two',
+            'phone': '01007145241',
+            'address': 'kafrshokr'
 
-        # rec.state = 'closed'
+        }))
 
 
-    # @api.model_create_multi
-    # def create(self, vals):
-    #     res = super(Property, self).create(vals)
-    #     print("inside create method")
-    #     return res
-
-    # @api.model
-    # def _search(self, domain, offset=0, limit=None, order=None, access_rights_uid=None):
-    #     res = super(Property, self)._search(domain, offset=0, limit=limit, order=order, access_rights_uid=access_rights_uid)
-    #     print("inside search method")
-    #     return res
-
-    # def write(self, vals):
-    #     res = super(Property, self).write(vals)
-    #     print("inside write method")
-    #     return res
-
-    # def unlink(self):
-    #     res = super(Property, self).unlink()
-    #     print("inside unlink method")
-    #     return res
+#adding a sequence     
+    @api.model
+    def create(self, vals):
+        if vals.get('ref', 'New') == 'New':
+            vals['ref'] = self.env['ir.sequence'].next_by_code('property_seq') or 'New'
+        return super(Property, self).create(vals)
+# @api.model
+# def create(self,vals):
+#     res = super(Property, self).create(vals)
+#     if res.ref == "New":
+#         res.ref = self.env['ir.sequence'].next_by_code('property_seq')
+#     return res
 
 
 class PropertyLine(models.Model):
